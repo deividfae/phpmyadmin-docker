@@ -1,10 +1,39 @@
-phpmyadmin:
-    image: phpmyadmin
-    container_name: phpmyadmin
-    environment:
-     - PMA_ARBITRARY=1
-    restart: always
-    ports:
-     - 8080:80
-    volumes:
-     - /sessions
+version: '3.8'
+
+volumes:
+  mariadb_vol:
+
+networks:
+  mariadb_net:
+    driver: bridge  
+
+services:
+  mariadb:
+      image: mariadb
+      networks:
+        - mariadb_net
+      volumes:
+        - mariadb_vol:/data/db
+      environment:
+        MARIADB_USER: mariadbuser
+        MARIADB_PASSWORD: mariadbpwd
+        MARIADB_DATABASE: mariadb
+        MARIADB_ROOT_PASSWORD: mariadbpwd
+        MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: false
+  
+  phpmyadmin:
+      image: phpmyadmin
+      container_name: phpmyadmin
+      environment:
+       - PMA_ARBITRARY=1
+       - PMA_HOST=mariadb
+       - PMA_USER=mariadbuser
+       - PMA_PASSWORD=mariadbpwd
+       - PMA_PORT=3306
+      restart: always
+      ports:
+       - 8080:80
+      networks:
+       - mariadb_net
+      volumes:
+       - /sessions
